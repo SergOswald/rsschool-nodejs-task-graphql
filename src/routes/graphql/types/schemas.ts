@@ -24,6 +24,7 @@ export const typeDefs = gql`
     deletePost(id: ID!): Boolean!
   }
 
+  # TYPES
   type Member {
     id: ID!
     name: String!
