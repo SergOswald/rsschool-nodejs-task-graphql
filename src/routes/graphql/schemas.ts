@@ -1,9 +1,12 @@
 import { gql } from 'mercurius';
 
 export const typeDefs = gql`
+  ################################################
+  # Root
+  ################################################
   type Query {
-    members: [Member!]!
-    member(id: ID!): Member
+    users: [User!]!
+    user(id: ID!): User
 
     posts: [Post!]!
     post(id: ID!): Post
@@ -12,41 +15,48 @@ export const typeDefs = gql`
     profile(id: ID!): Profile
 
     stats: [Stats!]!
+    stat(id: ID!): Stats
   }
 
   type Mutation {
-    createMember(name: String!): Member!
-    updateMember(id: ID!, name: String!): Member!
-    deleteMember(id: ID!): Boolean!
+    createUser(name: String!, email: String): User!
+    updateUser(id: ID!, name: String, email: String): User!
+    deleteUser(id: ID!): Boolean!
 
     createPost(authorId: ID!, title: String!): Post!
-    updatePost(id: ID!, title: String!): Post!
+    updatePost(id: ID!, title: String): Post!
     deletePost(id: ID!): Boolean!
   }
 
-  type Member {
+  ################################################
+  # Domain types
+  ################################################
+  type User {
     id: ID!
     name: String!
+    email: String
     posts: [Post!]
     profile: Profile
     stats: Stats
+    subs: [User!]       # подписчики / подчинённые (depends on your prisma schema)
   }
 
   type Post {
     id: ID!
     title: String!
-    author: Member!
+    content: String
+    author: User!
   }
 
   type Profile {
     id: ID!
     bio: String
-    member: Member!
+    user: User!
   }
 
   type Stats {
     id: ID!
     rating: Int
-    member: Member!
+    user: User!
   }
 `;

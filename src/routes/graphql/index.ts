@@ -1,23 +1,28 @@
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
-import { createGqlResponseSchema, gqlResponseSchema } from './schemas.js';
-import { graphql } from 'graphql';
+import * as memberResolvers from './member-types';
+import * as postResolvers from './posts';
+import * as profilesResolvers from './profiles';
+import * as statsResolvers from './stats';
+import * as usersResolvers from './users';
 
-const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { prisma } = fastify;
-
-  fastify.route({
-    url: '/',
-    method: 'POST',
-    schema: {
-      ...createGqlResponseSchema,
-      response: {
-        200: gqlResponseSchema,
-      },
-    },
-    async handler(req) {
-      // return graphql();
-    },
-  });
-};
-
-export default plugin;
+export const loadResolvers = () => ({
+  Query: {
+    ...(memberResolvers.Query || {}),
+    ...(postResolvers.Query || {}),
+    ...(profilesResolvers.Query || {}),
+    ...(statsResolvers.Query || {}),
+    ...(usersResolvers.Query || {}),
+  },
+  Mutation: {
+    ...(memberResolvers.Mutation || {}),
+    ...(postResolvers.Mutation || {}),
+    ...(profilesResolvers.Mutation || {}),
+    ...(statsResolvers.Mutation || {}),
+    ...(usersResolvers.Mutation || {}),
+  },
+  // Типы (field resolvers)
+  ...(memberResolvers.Types || {}),
+  ...(postResolvers.Types || {}),
+  ...(profilesResolvers.Types || {}),
+  ...(statsResolvers.Types || {}),
+  ...(usersResolvers.Types || {}),
+});

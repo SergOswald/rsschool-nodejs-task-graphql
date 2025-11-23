@@ -20,10 +20,11 @@ export default async function graphqlServer(fastify: FastifyInstance) {
     graphiql: true,
     path: '/graphql',
     validationRules: [depthLimit(5)],
-
-    context: async (request, reply) => ({
-      prisma: fastify.prisma,
-      loaders: createLoaders(fastify.prisma),
-    }),
+    context: (request, reply) => {
+      return {
+        prisma: fastify.prisma,
+        loaders: createLoaders(fastify.prisma),
+      };
+    },
   });
 }
