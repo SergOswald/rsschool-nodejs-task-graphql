@@ -1,5 +1,5 @@
 import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
-import { postSchema } from '../../../posts/schemas.js';
+import { postSchema } from '../../../graphql/posts/schemas.js';
 import { getPostsByUserIdSchema } from './schemas.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {

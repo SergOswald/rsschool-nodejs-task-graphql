@@ -1,6 +1,6 @@
 import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
 import { getProfileByUserIdSchema } from './schemas.js';
-import { profileSchema } from '../../../profiles/schemas.js';
+import { profileSchema } from '../../../graphql/profiles/schemas.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { prisma, httpErrors } = fastify;

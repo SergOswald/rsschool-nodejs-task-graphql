@@ -1,28 +1,15 @@
-import * as memberResolvers from './member-types';
-import * as postResolvers from './posts';
-import * as profilesResolvers from './profiles';
-import * as statsResolvers from './stats';
-import * as usersResolvers from './users';
+import * as member from './member-types/index.js';
+import * as posts from './posts/index.js';
+import * as profiles from './profiles/index.js';
+import * as stats from './stats/index.js';
+import * as users from './users/index.js';
 
-export const loadResolvers = () => ({
-  Query: {
-    ...(memberResolvers.Query || {}),
-    ...(postResolvers.Query || {}),
-    ...(profilesResolvers.Query || {}),
-    ...(statsResolvers.Query || {}),
-    ...(usersResolvers.Query || {}),
-  },
-  Mutation: {
-    ...(memberResolvers.Mutation || {}),
-    ...(postResolvers.Mutation || {}),
-    ...(profilesResolvers.Mutation || {}),
-    ...(statsResolvers.Mutation || {}),
-    ...(usersResolvers.Mutation || {}),
-  },
-  // Типы (field resolvers)
-  ...(memberResolvers.Types || {}),
-  ...(postResolvers.Types || {}),
-  ...(profilesResolvers.Types || {}),
-  ...(statsResolvers.Types || {}),
-  ...(usersResolvers.Types || {}),
-});
+export function loadResolvers() {
+  return [
+    member.resolvers,
+    posts.resolvers,
+    profiles.resolvers,
+    stats.resolvers,
+    users.resolvers,
+  ];
+}
