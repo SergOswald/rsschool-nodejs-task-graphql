@@ -1,15 +1,51 @@
-import { gql } from 'graphql-tag';
+// объединяем SDL-строки из модулей (здесь примеры типов)
+export const typeDefs = `
+  ################################################
+  # Queries & Mutations
+  ################################################
+  type Query {
+    users: [User!]!
+    user(id: ID!): User
+    posts: [Post!]!
+    post(id: ID!): Post
+  }
 
-import member from './member-types/schemas.js';
-import posts from './posts/schemas.js';
-import profiles from './profiles/schemas.js';
-import stats from './stats/schemas.js';
-import users from './users/schemas.js';
+  type Mutation {
+    createUser(name: String!, balance: Float): User!
+    updateUser(id: ID!, name: String, balance: Float): User!
+    deleteUser(id: ID!): Boolean!
+  }
 
-export const typeDefs = gql`
-  ${member}
-  ${posts}
-  ${profiles}
-  ${stats}
-  ${users}
+  ################################################
+  # Types
+  ################################################
+  type User {
+    id: ID!
+    name: String!
+    balance: Float!
+    profile: Profile
+    posts: [Post!]!
+    subs: [User!]!    # подписчики — пользователи, которые подписаны на этого автора
+  }
+
+  type Post {
+    id: ID!
+    title: String!
+    content: String
+    author: User!
+  }
+
+  type Profile {
+    id: ID!
+    isMale: Boolean!
+    yearOfBirth: Int!
+    user: User!
+    memberType: MemberType!
+  }
+
+  type MemberType {
+    id: ID!
+    discount: Float!
+    postsLimitPerMonth: Int!
+  }
 `;

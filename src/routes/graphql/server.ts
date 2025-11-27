@@ -1,33 +1,24 @@
 import { FastifyInstance } from 'fastify';
-import { makeExecutableSchema } from '@graphql-tools/schema';
-import { graphql } from 'graphql';
-import depthLimit from 'graphql-depth-limit';
 import mercurius from 'mercurius';
+import depthLimit from 'graphql-depth-limit';
 
 import { typeDefs } from './schemas.js';
-import { loadResolvers } from './index.js';
+import { resolvers } from './resolvers.js';
 import { createLoaders } from './loaders.js';
-import { PrismaClient } from '@prisma/client';
 
-export default async function gqlServer(fastify: FastifyInstance) {
-  const prisma = new PrismaClient();
-
-  const resolvers = loadResolvers();
-  const loaders = createLoaders(prisma);
-
-  const schema = makeExecutableSchema({
-    typeDefs,
+export default async function graphqlRoute(fastify: FastifyInstance) {
+  await fastify.register(mercurius as any, {
+    schema: typeDefs,
     resolvers,
-  });
-
-  fastify.register(mercurius, {
-    schema,
-    graphiql: false,
-    context: (req) => ({
-      prisma,
-      loaders,
-      userId: req.headers['x-user-id'] ?? null,
-    }),
+    graphiql: false, // tests use programmatic queries
+    path: '/graphql',
+    context: (request, reply) => {
+      const prisma = (fastify as any).prisma;
+      return {
+        prisma,
+        loaders: createLoaders(prisma),
+      };
+    },
     validationRules: [depthLimit(5)],
   });
 }

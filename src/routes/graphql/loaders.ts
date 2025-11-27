@@ -1,46 +1,41 @@
 import DataLoader from 'dataloader';
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 
-export const createLoaders = (prisma: PrismaClient) => ({
-  usersById: new DataLoader(async (ids: readonly string[]) => {
+/**
+ * createLoaders(prisma) -> объект loader'ов
+ *
+ * loaders:
+ *  - userById: DataLoader для получения пользователей по id (один findMany)
+ *  - subsByAuthor: DataLoader для получения подписчиков (модель SubscribersOnAuthors) для набора authorId (один findMany)
+ */
+export const createLoaders = (prisma: PrismaClient) => {
+  const userById = new DataLoader<string, any>(async (ids) => {
     const rows = await prisma.user.findMany({
       where: { id: { in: [...ids] } },
     });
-
-    const map = new Map(rows.map((u) => [u.id, u]));
+    const map = new Map(rows.map((r) => [r.id, r]));
     return ids.map((id) => map.get(id) ?? null);
-  }),
+  });
 
-  postsByUser: new DataLoader(async (userIds: readonly string[]) => {
-    const rows = await prisma.post.findMany({
-      where: { authorId: { in: [...userIds] } },
+  const subsByAuthor = new DataLoader<string, any[]>(async (authorIds) => {
+    // получаем записи SubscribersOnAuthors вместе с сущностями subscriber
+    const rows = await prisma.subscribersOnAuthors.findMany({
+      where: { authorId: { in: [...authorIds] } },
+      include: { subscriber: true },
     });
 
-    // ручная группировка
+    // сгруппируем по authorId
     const grouped: Record<string, any[]> = {};
     for (const r of rows) {
       if (!grouped[r.authorId]) grouped[r.authorId] = [];
-      grouped[r.authorId].push(r);
+      grouped[r.authorId].push(r.subscriber);
     }
 
-    return userIds.map((id) => grouped[id] ?? []);
-  }),
+    return authorIds.map((id) => grouped[id] ?? []);
+  });
 
-  profileByUser: new DataLoader(async (userIds: readonly string[]) => {
-    const rows = await prisma.profile.findMany({
-      where: { userId: { in: [...userIds] } },
-    });
-
-    const map = new Map(rows.map((p) => [p.userId, p]));
-    return userIds.map((id) => map.get(id) ?? null);
-  }),
-
-  memberTypeByProfile: new DataLoader(async (ids: readonly string[]) => {
-    const rows = await prisma.memberType.findMany({
-      where: { id: { in: [...ids] } },
-    });
-
-    const map = new Map(rows.map((mt) => [mt.id, mt]));
-    return ids.map((id) => map.get(id) ?? null);
-  }),
-});
+  return {
+    userById,
+    subsByAuthor,
+  };
+};
