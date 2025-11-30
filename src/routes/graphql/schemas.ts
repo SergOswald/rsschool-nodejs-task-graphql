@@ -1,11 +1,8 @@
-// объединяем SDL-строки из модулей (здесь примеры типов)
 export const typeDefs = `
-  ################################################
-  # Queries & Mutations
-  ################################################
   type Query {
     users: [User!]!
     user(id: ID!): User
+
     posts: [Post!]!
     post(id: ID!): Post
   }
@@ -14,18 +11,16 @@ export const typeDefs = `
     createUser(name: String!, balance: Float): User!
     updateUser(id: ID!, name: String, balance: Float): User!
     deleteUser(id: ID!): Boolean!
+    createPost(authorId: ID!, title: String!, content: String): Post!
   }
 
-  ################################################
-  # Types
-  ################################################
   type User {
     id: ID!
     name: String!
     balance: Float!
     profile: Profile
     posts: [Post!]!
-    subs: [User!]!    # подписчики — пользователи, которые подписаны на этого автора
+    subs: [User!]!           # подписчики (users, у которых author == this user)
   }
 
   type Post {

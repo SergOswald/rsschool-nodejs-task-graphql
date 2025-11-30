@@ -1,5 +1,5 @@
 import { Type } from '@fastify/type-provider-typebox';
-import { userFields } from '../../users/schemas.js';
+import { userFields } from '../users/schemas.js';
 
 export const postFields = {
   id: Type.String({

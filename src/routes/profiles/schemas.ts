@@ -1,6 +1,6 @@
 import { Type } from '@fastify/type-provider-typebox';
 import { memberTypeFields } from '../member-types/schemas.js';
-import { userFields } from '../../users/schemas.js';
+import { userFields } from '../users/schemas.js';
 
 export const profileFields = {
   id: Type.String({

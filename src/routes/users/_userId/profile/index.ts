@@ -1,32 +1,37 @@
-import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
-import { getProfileByUserIdSchema } from './schemas.js';
-import { profileSchema } from '../../../graphql/profiles/schemas.js';
+import { FastifyInstance } from 'fastify';
+import { profileSchema } from '../../../profiles/schemas.js';
 
-const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { prisma, httpErrors } = fastify;
-
-  fastify.route({
-    url: '/',
-    method: 'GET',
+export default async function (app: FastifyInstance) {
+  app.get<{
+    Params: { userId: string }
+  }>('/', {
     schema: {
-      ...getProfileByUserIdSchema,
+      summary: 'Get profile for user',
+      tags: ['users'],
+      params: {
+        type: 'object',
+        properties: { userId: { type: 'string' } },
+        required: ['userId'],
+      },
       response: {
         200: profileSchema,
-        404: Type.Null(),
       },
     },
-    async handler(req) {
-      const profile = await prisma.profile.findUnique({
-        where: {
-          userId: req.params.userId,
-        },
-      });
-      if (profile === null) {
-        throw httpErrors.notFound();
-      }
-      return profile;
-    },
-  });
-};
+  }, async (req, reply) => {
 
-export default plugin;
+    const userId = req.params.userId;
+
+    const profile = await app.db.profile.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        isMale: true,
+        yearOfBirth: true,
+        userId: true,
+        memberTypeId: true,
+      },
+    });
+
+    return profile;
+  });
+}

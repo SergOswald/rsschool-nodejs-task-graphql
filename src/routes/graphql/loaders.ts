@@ -2,11 +2,12 @@ import DataLoader from 'dataloader';
 import type { PrismaClient } from '@prisma/client';
 
 /**
- * createLoaders(prisma) -> объект loader'ов
+ * createLoaders(prisma) -> { userById, subsByAuthor }
  *
- * loaders:
- *  - userById: DataLoader для получения пользователей по id (один findMany)
- *  - subsByAuthor: DataLoader для получения подписчиков (модель SubscribersOnAuthors) для набора authorId (один findMany)
+ * - userById: batched findMany by id
+ * - subsByAuthor: batched findMany on SubscribersOnAuthors where authorId IN (...) with include subscriber
+ *
+ * Important: we return exact arrays aligned with keys to satisfy DataLoader contract.
  */
 export const createLoaders = (prisma: PrismaClient) => {
   const userById = new DataLoader<string, any>(async (ids) => {
@@ -18,16 +19,16 @@ export const createLoaders = (prisma: PrismaClient) => {
   });
 
   const subsByAuthor = new DataLoader<string, any[]>(async (authorIds) => {
-    // получаем записи SubscribersOnAuthors вместе с сущностями subscriber
+    // single findMany for all authorIds — include subscriber to get User objects
     const rows = await prisma.subscribersOnAuthors.findMany({
       where: { authorId: { in: [...authorIds] } },
       include: { subscriber: true },
     });
 
-    // сгруппируем по authorId
     const grouped: Record<string, any[]> = {};
     for (const r of rows) {
       if (!grouped[r.authorId]) grouped[r.authorId] = [];
+      // r.subscriber is a User (because of include)
       grouped[r.authorId].push(r.subscriber);
     }
 

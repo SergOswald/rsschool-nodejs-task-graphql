@@ -1,13 +1,29 @@
-import member from './member-types/schemas.js.js';
-import posts from './posts/schemas.js.js';
-import profiles from './profiles/schemas.js.js';
-import stats from './stats/schemas.js.js';
-import users from './users/schemas.js.js';
+import { Type } from '@fastify/type-provider-typebox';
 
-export const typeDefs = `
-  ${member}
-  ${posts}
-  ${profiles}
-  ${stats}
-  ${users}
-`;
+export enum MemberTypeId {
+  BASIC = 'BASIC',
+  BUSINESS = 'BUSINESS',
+}
+
+export const memberTypeFields = {
+  id: Type.String({
+    pattern: Object.values(MemberTypeId).join('|'),
+  }),
+  discount: Type.Number(),
+  postsLimitPerMonth: Type.Integer(),
+};
+
+export const memberTypeSchema = Type.Object({
+  ...memberTypeFields,
+});
+
+export const getMemberTypeByIdSchema = {
+  params: Type.Object(
+    {
+      memberTypeId: memberTypeFields.id,
+    },
+    {
+      additionalProperties: false,
+    },
+  ),
+};

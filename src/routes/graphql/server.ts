@@ -6,12 +6,13 @@ import { typeDefs } from './schemas.js';
 import { resolvers } from './resolvers.js';
 import { createLoaders } from './loaders.js';
 
-export default async function graphqlRoute(fastify: FastifyInstance) {
+export default async function graphql(fastify: FastifyInstance) {
   await fastify.register(mercurius as any, {
     schema: typeDefs,
     resolvers,
-    graphiql: false, // tests use programmatic queries
+    graphiql: false,
     path: '/graphql',
+    validationRules: [depthLimit(5)],
     context: (request, reply) => {
       const prisma = (fastify as any).prisma;
       return {
@@ -19,6 +20,5 @@ export default async function graphqlRoute(fastify: FastifyInstance) {
         loaders: createLoaders(prisma),
       };
     },
-    validationRules: [depthLimit(5)],
   });
 }
