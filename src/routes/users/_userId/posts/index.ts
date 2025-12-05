@@ -1,27 +1,39 @@
-import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
+import { FastifyInstance } from 'fastify';
 import { postSchema } from '../../../posts/schemas.js';
-import { getPostsByUserIdSchema } from './schemas.js';
 
-const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { prisma } = fastify;
-
-  fastify.route({
-    url: '/',
-    method: 'GET',
+export default async function (app: FastifyInstance) {
+  app.get<{
+    Params: { userId: string }
+  }>('/', {
     schema: {
-      ...getPostsByUserIdSchema,
+      summary: 'Get posts for user',
+      tags: ['users'],
+      params: {
+        type: 'object',
+        properties: { userId: { type: 'string' } },
+        required: ['userId'],
+      },
       response: {
-        200: Type.Array(postSchema),
+        200: {
+          type: 'array',
+          items: postSchema,
+        },
       },
     },
-    async handler(req) {
-      return prisma.post.findMany({
-        where: {
-          authorId: req.params.userId,
-        },
-      });
-    },
-  });
-};
+  }, async (req, reply) => {
 
-export default plugin;
+    const userId = req.params.userId; // already string
+
+    const posts = await app.db.post.findMany({
+      where: { authorId: userId },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        authorId: true,
+      },
+    });
+
+    return posts;
+  });
+}
